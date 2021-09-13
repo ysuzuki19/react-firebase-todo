@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@emotion/react": "^11.4.1",
+    "@emotion/styled": "^11.3.0",
+    "@mui/material": "^5.0.0-rc.1",
     "@types/node": "^16.9.1",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
@@ -14,6 +17,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "dev": "BROWSER=NONE npm start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
