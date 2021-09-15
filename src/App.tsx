@@ -28,16 +28,19 @@ const ToDosViewer = ({ todos, deleteToDo }: ToDosProps) => {
   return (
     <Grid container m={3}>
       {todos?.map((todo, idx) => (
-        <Card key={idx} variant="outlined" sx={{ margin: 1 }}>
-          <CardContent>
-            <Typography variant="h5">{todo.name}</Typography>
-          </CardContent>
-          <CardActions>
-            <IconButton onClick={() => deleteToDo(idx)}>
-              <DeleteIcon />
-            </IconButton>
-          </CardActions>
-        </Card>
+        <Grid item key={idx} xs={4} padding={3}>
+          <Card variant="outlined">
+            <CardContent>
+              <Typography variant="h5">{todo.name}</Typography>
+              <Divider />
+            </CardContent>
+            <CardActions>
+              <IconButton onClick={() => deleteToDo(idx)}>
+                <DeleteIcon />
+              </IconButton>
+            </CardActions>
+          </Card>
+        </Grid>
       ))}
     </Grid>
   );
@@ -113,8 +116,9 @@ const App = () => {
         <Box m={3}>
           <Typography variant="h3">React Firebase ToDo App</Typography>
           <Divider />
-          <Box m={3} />
-          <AddToDoForm addToDo={addToDo} />
+          <Box m={5}>
+            <AddToDoForm addToDo={addToDo} />
+          </Box>
           <ToDosViewer todos={todos} deleteToDo={deleteToDo} />
         </Box>
       </Paper>
