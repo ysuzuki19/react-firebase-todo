@@ -1,101 +1,59 @@
 import React from 'react';
+import { initializeApp } from 'firebase/app';
+import { getAuth, signInAnonymously } from 'firebase/auth';
 import {
-  Button,
-  Card,
-  CardActions,
-  CardContent,
-  Divider,
-  Grid,
-  Paper,
-  Stack,
-  TextField,
-  Typography,
-  IconButton,
-} from '@mui/material';
+  getFirestore,
+  collection,
+  doc,
+  getDoc,
+  setDoc,
+} from 'firebase/firestore';
+import { Divider, Paper, Typography } from '@mui/material';
 import { Box } from '@mui/system';
-import { Delete as DeleteIcon } from '@mui/icons-material';
 
-interface Todo {
-  name: string;
-}
+import { ToDosViewer, AddToDoForm, Todo } from './components/Todos';
+import firebaseConfig from './firebase.config';
 
-interface ToDosProps {
-  todos: Todo[];
-  deleteToDo: (idx: number) => void;
-}
-
-const ToDosViewer = ({ todos, deleteToDo }: ToDosProps) => {
-  return (
-    <Grid container m={3}>
-      {todos?.map((todo, idx) => (
-        <Grid item key={idx} xs={4} padding={3}>
-          <Card variant="outlined">
-            <CardContent>
-              <Typography variant="h5">{todo.name}</Typography>
-              <Divider />
-            </CardContent>
-            <CardActions>
-              <IconButton onClick={() => deleteToDo(idx)}>
-                <DeleteIcon />
-              </IconButton>
-            </CardActions>
-          </Card>
-        </Grid>
-      ))}
-    </Grid>
-  );
-};
-
-interface AddToDoFormProps {
-  addToDo: (todo: Todo) => void;
-}
-
-const AddToDoForm = ({ addToDo }: AddToDoFormProps) => {
-  const [name, setName] = React.useState<string>('');
-
-  const isInvalid = (name: string) => {
-    if (name === ' ') return true;
-    return false;
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    if (isInvalid(e.target.value)) return;
-    setName(e.target.value);
-  };
-
-  return (
-    <>
-      <Stack
-        direction="row"
-        spacing={2}
-        divider={<Divider orientation="vertical" flexItem />}
-      >
-        <TextField
-          id="outlined-basic"
-          label="New Todo *"
-          variant="outlined"
-          value={name}
-          onChange={handleChange}
-        />
-
-        <Button
-          variant="contained"
-          onClick={() => {
-            addToDo({ name });
-            setName('');
-          }}
-        >
-          Add
-        </Button>
-      </Stack>
-    </>
-  );
-};
+initializeApp(firebaseConfig);
+const db = getFirestore();
+const todoRef = collection(db, 'todos');
+const auth = getAuth();
 
 const App = () => {
   const [todos, setTodos] = React.useState<Todo[]>([]);
+  const [uid, setUid] = React.useState<string>('');
+
+  const fetchTodos = (userid: string) => {
+    if (userid.length === 0) return;
+    getDoc(doc(todoRef, userid)).then((docSnap) => {
+      if (docSnap.exists()) {
+        console.log('fetched', docSnap.data());
+        setTodos(docSnap.data().todos);
+      } else {
+        console.log('data not found');
+      }
+    });
+    console.log('End fetch');
+  };
+
+  const saveTodos = () => {
+    if (uid.length === 0) return;
+    setDoc(doc(todoRef, uid), { todos: todos });
+    console.log('saved');
+  };
+
+  React.useEffect(() => {
+    signInAnonymously(auth)
+      .then((result) => {
+        console.log('signin', result);
+        setUid(result.user.uid);
+        fetchTodos(result.user.uid);
+      })
+      .catch((err) => {
+        console.log('Error ', err);
+      });
+    console.log('finish mount');
+  }, []);
 
   const addToDo = (todo: Todo): boolean => {
     if (todo.name.length === 0) return false;
@@ -117,7 +75,7 @@ const App = () => {
           <Typography variant="h3">React Firebase ToDo App</Typography>
           <Divider />
           <Box m={5}>
-            <AddToDoForm addToDo={addToDo} />
+            <AddToDoForm addToDo={addToDo} saveToDo={saveTodos} />
           </Box>
           <ToDosViewer todos={todos} deleteToDo={deleteToDo} />
         </Box>

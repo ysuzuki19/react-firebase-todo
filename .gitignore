@@ -138,3 +138,4 @@ package-lock.json
 yarn.lock
 /build
 .firebase/hosting.YnVpbGQ.cache
+src/firebase.config.ts
